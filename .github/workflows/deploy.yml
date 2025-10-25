@@ -14,18 +14,24 @@ permissions:
 jobs:
   deploy:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
-    # Security: Pinned to specific SHA instead of @main to prevent supply chain attacks
-    # Update this SHA when you want to upgrade to a newer version of ZeroKeyCI
-    # Current SHA: d14dcd45e14ff5cb97e07fab1c6e80da9a1decbb (fix/action-dependency-installation branch with dependency installation fix)
-    uses: susumutomita/ZeroKeyCI/.github/workflows/reusable-deploy.yml@main
-    with:
-      # Demo mode: Uses ZeroKeyCI-provided Safe for testing
-      safe-address: "0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663"
-      network: base-sepolia
-      contract-name: HelloZeroKeyCI
-      verify-blockscout: true
-    secrets:
-      # IMPORTANT: For production, create a GitHub Secret named BASE_SEPOLIA_RPC_URL
-      # For demo purposes, using public RPC is acceptable
-      # Go to: Settings > Secrets and variables > Actions > New repository secret
-      rpc-url: ${{ secrets.BASE_SEPOLIA_RPC_URL || 'https://sepolia.base.org' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # Security: Using @main for latest version
+      # Recommended to pin to specific SHA in production: susumutomita/ZeroKeyCI@<commit-sha>
+      - uses: susumutomita/ZeroKeyCI@main
+        with:
+          # Demo mode: Uses ZeroKeyCI-provided Safe for testing
+          safe-address: "0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663"
+          network: base-sepolia
+          contract-name: HelloZeroKeyCI
+          verify-blockscout: true
+          # IMPORTANT: For production, create a GitHub Secret named BASE_SEPOLIA_RPC_URL
+          # For demo purposes, using public RPC is acceptable
+          # Go to: Settings > Secrets and variables > Actions > New repository secret
+          rpc-url: ${{ secrets.BASE_SEPOLIA_RPC_URL || 'https://sepolia.base.org' }}
