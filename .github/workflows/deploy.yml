@@ -17,7 +17,7 @@ jobs:
     # Security: Pinned to specific SHA instead of @main to prevent supply chain attacks
     # Update this SHA when you want to upgrade to a newer version of ZeroKeyCI
     # Current SHA: d14dcd45e14ff5cb97e07fab1c6e80da9a1decbb (fix/action-dependency-installation branch with dependency installation fix)
-    uses: susumutomita/ZeroKeyCI/.github/workflows/reusable-deploy.yml@d14dcd45e14ff5cb97e07fab1c6e80da9a1decbb
+    uses: susumutomita/ZeroKeyCI/.github/workflows/reusable-deploy.yml@main
     with:
       # Demo mode: Uses ZeroKeyCI-provided Safe for testing
       safe-address: "0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663"
