@@ -4,17 +4,18 @@ on:
   pull_request:
     types: [closed]
     branches: [main]
+  workflow_dispatch:  # 手動実行を許可
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     uses: susumutomita/ZeroKeyCI/.github/workflows/reusable-deploy.yml@main
     with:
       # デモモード: ZeroKeyCI提供のSafeを使用
-      safe-address: 0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663
+      safe-address: "0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663"
       network: base-sepolia
       contract-name: HelloZeroKeyCI
       verify-blockscout: true
     secrets:
       # Base Sepolia公開RPC URL (無料)
-      rpc-url: https://sepolia.base.org
+      rpc-url: "https://sepolia.base.org"
