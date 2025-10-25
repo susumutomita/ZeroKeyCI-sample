@@ -9,6 +9,10 @@ on:
 jobs:
   deploy:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    permissions:
+      actions: write
+      pull-requests: write
+      contents: read
     uses: susumutomita/ZeroKeyCI/.github/workflows/reusable-deploy.yml@main
     with:
       # デモモード: ZeroKeyCI提供のSafeを使用
