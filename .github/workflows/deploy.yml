@@ -31,7 +31,9 @@ jobs:
           network: base-sepolia
           contract-name: HelloZeroKeyCI
           verify-blockscout: true
-          # IMPORTANT: For production, create a GitHub Secret named BASE_SEPOLIA_RPC_URL
-          # For demo purposes, using public RPC is acceptable
+          # IMPORTANT: For production, create these GitHub Secrets:
+          # - BASE_SEPOLIA_RPC_URL: Your RPC URL
+          # - SAFE_API_KEY: Get from https://developer.safe.global (required for auto-queue submission)
           # Go to: Settings > Secrets and variables > Actions > New repository secret
           rpc-url: ${{ secrets.BASE_SEPOLIA_RPC_URL || 'https://sepolia.base.org' }}
+          safe-api-key: ${{ secrets.SAFE_API_KEY }}
