@@ -4,13 +4,22 @@
   "description": "Sample repository demonstrating ZeroKeyCI for ETHOnline 2025",
   "scripts": {
     "compile": "hardhat compile",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "test:coverage": "hardhat coverage",
+    "test:gas": "REPORT_GAS=true hardhat test"
   },
   "keywords": ["ethereum", "hardhat", "zerokeyci", "gnosis-safe", "ethonline2025"],
-  "author": "",
+  "author": "ZeroKeyCI Team",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "hardhat": "^2.22.0"
+    "@nomicfoundation/hardhat-toolbox": "5.0.0",
+    "hardhat": "2.26.3",
+    "solidity-coverage": "0.8.13"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.1.0"
   }
 }

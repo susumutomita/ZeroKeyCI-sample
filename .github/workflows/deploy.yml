@@ -4,22 +4,28 @@ on:
   pull_request:
     types: [closed]
     branches: [main]
-  workflow_dispatch:  # 手動実行を許可
+  workflow_dispatch: # Manual execution allowed
+
+permissions:
+  actions: write
+  pull-requests: write
+  contents: read
 
 jobs:
   deploy:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
-    permissions:
-      actions: write
-      pull-requests: write
-      contents: read
-    uses: susumutomita/ZeroKeyCI/.github/workflows/reusable-deploy.yml@main
+    # Security: Pinned to specific SHA instead of @main to prevent supply chain attacks
+    # Update this SHA when you want to upgrade to a newer version of ZeroKeyCI
+    # Current SHA: 91d6611b4ca19fc7771f655c5605c688ed67f099 (latest as of 2025-10-25)
+    uses: susumutomita/ZeroKeyCI/.github/workflows/reusable-deploy.yml@91d6611b4ca19fc7771f655c5605c688ed67f099
     with:
-      # デモモード: ZeroKeyCI提供のSafeを使用
+      # Demo mode: Uses ZeroKeyCI-provided Safe for testing
       safe-address: "0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663"
       network: base-sepolia
       contract-name: HelloZeroKeyCI
       verify-blockscout: true
     secrets:
-      # Base Sepolia公開RPC URL (無料)
-      rpc-url: "https://sepolia.base.org"
+      # IMPORTANT: For production, create a GitHub Secret named BASE_SEPOLIA_RPC_URL
+      # For demo purposes, using public RPC is acceptable
+      # Go to: Settings > Secrets and variables > Actions > New repository secret
+      rpc-url: ${{ secrets.BASE_SEPOLIA_RPC_URL || 'https://sepolia.base.org' }}
