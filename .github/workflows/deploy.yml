@@ -16,8 +16,8 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     # Security: Pinned to specific SHA instead of @main to prevent supply chain attacks
     # Update this SHA when you want to upgrade to a newer version of ZeroKeyCI
-    # Current SHA: 91d6611b4ca19fc7771f655c5605c688ed67f099 (latest as of 2025-10-25)
-    uses: susumutomita/ZeroKeyCI/.github/workflows/reusable-deploy.yml@91d6611b4ca19fc7771f655c5605c688ed67f099
+    # Current SHA: d14dcd45e14ff5cb97e07fab1c6e80da9a1decbb (fix/action-dependency-installation branch with dependency installation fix)
+    uses: susumutomita/ZeroKeyCI/.github/workflows/reusable-deploy.yml@d14dcd45e14ff5cb97e07fab1c6e80da9a1decbb
     with:
       # Demo mode: Uses ZeroKeyCI-provided Safe for testing
       safe-address: "0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663"
