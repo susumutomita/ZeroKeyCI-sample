@@ -1,313 +1,232 @@
-# プロンプト: ZeroKeyCI サンプルレポジトリのセットアップ
+# ZeroKeyCI Sample - Development Guide
 
-## 依頼内容
+このファイルはClaude Codeなどの開発支援AIが、このプロジェクトのコンテキストを理解するためのドキュメントです。
 
-`/Users/susumu/ethglobal/ZeroKeyCI-sample` ディレクトリに、ZeroKeyCIのデモ用サンプルレポジトリを完全にセットアップしてください。
+## プロジェクト概要
 
-## 要件
+**ZeroKeyCI Sample** は、[ZeroKeyCI](https://github.com/susumutomita/ZeroKeyCI)のデモンストレーション用サンプルリポジトリです。
 
-- ETHOnline 2025ハッカソン用のデモプロジェクト
-- ZeroKeyCIを使ってスマートコントラクトをデプロイ
-- デモSafeアドレスを使用（秘密鍵不要）
-- Hardhat + Solidity 0.8.20
-- Base Sepoliaテストネット対応
+### 目的
 
-## 作成するディレクトリ構造
+- CI/CDパイプラインで秘密鍵を使わずにスマートコントラクトをデプロイ
+- Gnosis Safe multisigを使った安全なデプロイフロー
+- ETHOnline 2025ハッカソンでのデモンストレーション
+
+### 技術スタック
+
+- **Smart Contract**: Solidity 0.8.20
+- **Development Framework**: Hardhat 2.22.0
+- **CI/CD**: GitHub Actions
+- **Deployment**: ZeroKeyCI (Gnosis Safe integration)
+- **Network**: Base Sepolia (testnet)
+
+## ディレクトリ構造
 
 ```
-/Users/susumu/ethglobal/ZeroKeyCI-sample/
+.
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml
+│       └── deploy.yml          # ZeroKeyCI deployment workflow
 ├── contracts/
-│   └── HelloZeroKeyCI.sol
+│   └── HelloZeroKeyCI.sol     # Demo smart contract
+├── artifacts/                  # Compiled contracts (gitignored)
+├── cache/                      # Hardhat cache (gitignored)
+├── node_modules/              # npm dependencies (gitignored)
 ├── .gitignore
-├── README.md
-├── package.json
-└── hardhat.config.js
+├── CLAUDE.md                  # このファイル
+├── README.md                  # ユーザー向けドキュメント
+├── hardhat.config.js          # Hardhat configuration
+└── package.json               # Project dependencies
 ```
 
-## ファイル内容
+## 重要な開発ガイドライン
 
-### 1. package.json
+### 1. Solidityコーディング規約
 
-```json
-{
-  "name": "zerokeyci-sample",
-  "version": "1.0.0",
-  "description": "Sample repository demonstrating ZeroKeyCI for ETHOnline 2025",
-  "scripts": {
-    "compile": "hardhat compile",
-    "test": "hardhat test"
-  },
-  "keywords": ["ethereum", "hardhat", "zerokeyci", "gnosis-safe", "ethonline2025"],
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "hardhat": "^2.22.0"
-  }
-}
-```
+#### ❌ Unicode文字の使用禁止
 
-### 2. hardhat.config.js
-
-```javascript
-require("@nomicfoundation/hardhat-toolbox");
-
-/** @type import('hardhat/config').HardhatUserConfig */
-module.exports = {
-  solidity: {
-    version: "0.8.20",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
-      },
-    },
-  },
-  networks: {
-    hardhat: {},
-  },
-};
-```
-
-### 3. contracts/HelloZeroKeyCI.sol
+Solidity 0.8.20では文字列リテラル内のUnicode文字(絵文字など)がコンパイルエラーになります。
 
 ```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+// ❌ NG - コンパイルエラー
+message = "Hello! 🚀";
 
-/**
- * @title HelloZeroKeyCI
- * @dev デモ用のシンプルなコントラクト
- * ETHOnline 2025 - ZeroKeyCI demonstration
- */
-contract HelloZeroKeyCI {
-    string public message;
-    address public owner;
-    uint256 public deployedAt;
-
-    event MessageUpdated(string oldMessage, string newMessage, address updatedBy);
-
-    constructor() {
-        message = "Hello from ZeroKeyCI! 🚀 No private keys in CI/CD!";
-        owner = msg.sender;
-        deployedAt = block.timestamp;
-    }
-
-    function setMessage(string memory _newMessage) public {
-        string memory oldMessage = message;
-        message = _newMessage;
-        emit MessageUpdated(oldMessage, _newMessage, msg.sender);
-    }
-
-    function getInfo() public view returns (
-        string memory currentMessage,
-        address contractOwner,
-        uint256 deploymentTime
-    ) {
-        return (message, owner, deployedAt);
-    }
-}
+// ✅ OK
+message = "Hello!";
 ```
 
-### 4. .github/workflows/deploy.yml
+#### コントラクト設計の原則
+
+- シンプルさを優先（デモ用途）
+- ガス最適化よりも可読性
+- イベントログを活用
+- 必ずコメントを記述
+
+### 2. GitHub Actions ワークフロー
+
+#### デプロイトリガー
 
 ```yaml
-name: Deploy Smart Contracts with ZeroKeyCI
-
 on:
   pull_request:
     types: [closed]
     branches: [main]
-
-jobs:
-  deploy:
-    if: github.event.pull_request.merged == true
-    uses: susumutomita/ZeroKeyCI/.github/workflows/reusable-deploy.yml@main
-    with:
-      # デモモード: ZeroKeyCI提供のSafeを使用
-      safe-address: 0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663
-      network: base-sepolia
-      contract-name: HelloZeroKeyCI
-      verify-blockscout: true
-    secrets:
-      # Base Sepolia公開RPC URL (無料)
-      rpc-url: https://sepolia.base.org
 ```
 
-### 5. .gitignore
+**重要**: デプロイは**PRがマージされた時のみ**実行されます。mainブランチへの直接pushでは動作しません。
 
-```
-node_modules
-.env
-coverage
-coverage.json
-typechain
-typechain-types
+#### ZeroKeyCI設定
 
-# Hardhat files
-cache
-artifacts
-
-# IDE
-.idea
-.vscode
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
+```yaml
+with:
+  safe-address: 0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663  # Demo Safe
+  network: base-sepolia
+  contract-name: HelloZeroKeyCI
+  verify-blockscout: true
 ```
 
-### 6. README.md
+### 3. 開発フロー
 
-```markdown
-# ZeroKeyCI Sample - ETHOnline 2025
+#### 新機能の追加
 
-**デモ用サンプルリポジトリ**: ZeroKeyCIを使って秘密鍵なしでスマートコントラクトをデプロイ
-
-## 🎯 このレポジトリについて
-
-このリポジトリは[ZeroKeyCI](https://github.com/susumutomita/ZeroKeyCI)の実動デモです。
-
-- ✅ **秘密鍵をCI/CDに保存しない**
-- ✅ **Gnosis Safe multisigで承認**
-- ✅ **完全な監査証跡**
-
-## 🚀 クイックスタート (デモモード)
-
-### 前提条件
-
-- Node.js 18以上
-- GitHub アカウント
-- MetaMask (Safe UIでの署名用)
-
-### セットアップ
-
-```bash
-# 1. 依存関係をインストール
-npm install
-
-# 2. コントラクトをコンパイル
-npm run compile
-
-# 3. GitHubにpush
-git add .
-git commit -m "feat: add HelloZeroKeyCI contract"
-git push origin main
-```
-
-### デプロイ方法
-
-1. **ブランチを作成してPRを開く**
+1. **ブランチを作成**
    ```bash
-   git checkout -b feat/test-deploy
-   echo "# Test" >> test.txt
-   git add test.txt
-   git commit -m "test: trigger deployment"
-   git push -u origin feat/test-deploy
-   gh pr create --title "Test ZeroKeyCI Deployment" --body "Testing deployment"
+   git checkout -b feat/your-feature-name
    ```
 
-2. **PRをマージ**
-   - GitHub UIでPRをマージ
-   - GitHub Actionsが自動実行される
+2. **コードを編集**
+   - `contracts/` でSolidityコードを編集
+   - `hardhat.config.js` で必要に応じて設定変更
 
-3. **Safe UIで署名**
-   - [app.safe.global](https://app.safe.global)にアクセス
-   - **Base Sepolia**ネットワークに切り替え
-   - デモSafe (`0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663`) をロード
-   - 自分を所有者として追加(初回のみ):
-     - Settings → Owners → Add Owner
-     - あなたのウォレットアドレスを入力
-   - Transactionsタブで提案を確認
-   - **Sign**ボタンをクリック
-   - MetaMaskで署名を確認
-   - **Execute**をクリック
+3. **ローカルでテスト**
+   ```bash
+   npm run compile  # コンパイルチェック
+   ```
 
-4. **デプロイ完了!** 🎉
-   - コントラクトがBase Sepoliaにデプロイされる
-   - Blockscoutで自動的に検証される
-   - PRにデプロイアドレスがコメントされる
+4. **PRを作成**
+   ```bash
+   git add .
+   git commit -m "feat: description"
+   git push -u origin feat/your-feature-name
+   gh pr create --title "feat: Your Feature" --body "Description"
+   ```
 
-## 📝 デモSafeについて
+5. **PRマージ後、Safe UIで署名**
+   - GitHub Actionsがデプロイトランザクションを作成
+   - Safe UIで承認・実行
 
-このサンプルはZeroKeyCI提供の**デモSafe**を使用しています:
+### 4. トラブルシューティング
 
-- **Address**: `0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663`
-- **Network**: Base Sepolia (testnet)
-- **用途**: 学習とテスト専用
-- **⚠️ 重要**: 本番環境では自分のSafeを作成してください
+#### コンパイルエラー
 
-## 🔄 本番環境への移行
-
-デモで動作を確認したら、自分のSafeを作成:
-
-1. [app.safe.global](https://app.safe.global)で新しいSafeを作成
-2. `.github/workflows/deploy.yml`の`safe-address`を更新
-3. 本番用RPC URLをGitHub Secretsに設定
-4. デプロイ!
-
-詳細: [ZeroKeyCI Documentation](https://github.com/susumutomita/ZeroKeyCI/blob/main/docs/DEMO_MODE.md)
-
-## 📚 コントラクト
-
-### HelloZeroKeyCI.sol
-
-シンプルなメッセージストレージコントラクト:
-
-- `message`: 現在のメッセージ
-- `owner`: デプロイしたアドレス
-- `deployedAt`: デプロイ時刻
-- `setMessage(string)`: メッセージを更新
-- `getInfo()`: 全情報を取得
-
-## 🛠 開発
-
-```bash
-# コンパイル
-npm run compile
-
-# テスト (追加する場合)
-npm run test
+**問題**: `Invalid character in string`
+```
+ParserError: Invalid character in string.
 ```
 
-## 🔗 リンク
+**解決**: 文字列から絵文字・特殊文字を削除
+
+---
+
+**問題**: `HH600: Compilation failed`
+
+**解決**:
+```bash
+# キャッシュをクリア
+rm -rf cache artifacts
+npm run compile
+```
+
+#### デプロイエラー
+
+**問題**: GitHub Actionsが実行されない
+
+**チェックポイント**:
+- PRがマージ済みか？
+- ベースブランチは`main`か？
+- ワークフローファイルに文法エラーがないか？
+
+---
+
+**問題**: Safe UIにトランザクションが表示されない
+
+**チェックポイント**:
+- 正しいネットワーク(Base Sepolia)に接続しているか？
+- Safeアドレスが正しいか？
+- GitHub Actionsのログを確認
+
+## コード変更時の注意事項
+
+### contracts/HelloZeroKeyCI.sol
+
+- コンストラクタの初期メッセージは ASCII文字のみ使用
+- 関数は public または external で可視性を明示
+- イベント定義を維持（監査証跡のため）
+
+### .github/workflows/deploy.yml
+
+- `safe-address` の変更は慎重に（本番環境移行時のみ）
+- `network` は Base Sepolia固定（デモ環境）
+- `contract-name` はファイル名と一致させる
+
+### hardhat.config.js
+
+- Solidity バージョンは 0.8.20 固定
+- Optimizer設定はデフォルト維持（200 runs）
+
+## よくある質問
+
+### Q: コントラクトを変更したらどうすればいい？
+
+A: 以下の手順:
+1. ローカルで `npm run compile` を実行
+2. エラーがないことを確認
+3. 新しいブランチでPRを作成
+4. PRマージ後、Safe UIで新しいデプロイを承認
+
+### Q: デモSafeを自分のSafeに変更するには？
+
+A:
+1. [app.safe.global](https://app.safe.global) で新しいSafeを作成
+2. `.github/workflows/deploy.yml` の `safe-address` を更新
+3. 必要に応じてRPC URLをGitHub Secretsに設定
+
+### Q: テストネットからメインネットに移行するには？
+
+A: **推奨しません**。このリポジトリはデモ専用です。本番環境では別リポジトリを作成してください。
+
+## Claude向けのコンテキスト
+
+### 開発支援時の推奨アクション
+
+1. **コード変更前**: 必ず `npm run compile` で検証
+2. **Solidityコード**: Unicode文字を使わない
+3. **PR作成**: 常に新しいブランチから
+4. **コミットメッセージ**: Conventional Commits形式
+
+### このプロジェクトで避けるべきこと
+
+- ❌ mainブランチへの直接push
+- ❌ Solidity文字列内の絵文字使用
+- ❌ Demo Safeアドレスの変更（デモ用途以外）
+- ❌ 秘密鍵・RPCキーのハードコード
+- ❌ テストなしでのコントラクト変更
+
+### 推奨される改善提案
+
+- ✅ テストケースの追加 (`test/` ディレクトリ)
+- ✅ 複数コントラクトのサポート
+- ✅ より複雑なSafeインタラクション
+- ✅ デプロイスクリプトの追加
+
+## 参考リンク
 
 - **ZeroKeyCI**: https://github.com/susumutomita/ZeroKeyCI
-- **Demo Mode Guide**: https://github.com/susumutomita/ZeroKeyCI/blob/main/docs/DEMO_MODE.md
-- **ETHOnline 2025**: https://ethglobal.com/events/ethonline2025
+- **Hardhat Docs**: https://hardhat.org/docs
+- **Safe Documentation**: https://docs.safe.global/
+- **Solidity Style Guide**: https://docs.soliditylang.org/en/latest/style-guide.html
 
-## 📜 ライセンス
+---
 
-MIT
-```
-
-## 実行手順
-
-1. `/Users/susumu/ethglobal/ZeroKeyCI-sample` ディレクトリを作成（存在しない場合）
-2. 上記のディレクトリ構造に従って全ファイルを作成
-3. 各ファイルに上記の内容を正確に記述
-4. ディレクトリに移動して `npm install` を実行
-5. `npm run compile` でコンパイル成功を確認
-
-## 期待される出力
-
-- `npm install` が成功し、node_modulesが作成される
-- `npm run compile` が成功し、artifacts/とcache/が作成される
-- エラーなくコンパイルが完了する
-
-## 確認事項
-
-- [ ] 全6ファイルが正しい場所に作成されている
-- [ ] package.jsonの依存関係がインストールされている
-- [ ] Solidityコントラクトがコンパイルできる
-- [ ] .gitignoreが設定されている
-- [ ] README.mdが読みやすい
-
-以上です。よろしくお願いします。
-
-完了したらプルリクエストを出しておいてください。
+**最終更新**: 2025-10-25
+**対象**: ETHOnline 2025 Hackathon Demo
