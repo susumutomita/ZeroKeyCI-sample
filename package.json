@@ -1,0 +1,16 @@
+{
+  "name": "zerokeyci-sample",
+  "version": "1.0.0",
+  "description": "Sample repository demonstrating ZeroKeyCI for ETHOnline 2025",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test"
+  },
+  "keywords": ["ethereum", "hardhat", "zerokeyci", "gnosis-safe", "ethonline2025"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.0"
+  }
+}
