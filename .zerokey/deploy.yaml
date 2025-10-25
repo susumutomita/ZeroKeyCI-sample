@@ -1,0 +1,33 @@
+# ZeroKeyCI Deployment Configuration
+# https://github.com/susumutomita/ZeroKeyCI
+
+# Contract deployment settings
+contract:
+  name: HelloZeroKeyCI
+  path: contracts/HelloZeroKeyCI.sol
+
+# Build configuration
+build:
+  # Install dependencies before compiling
+  prepare: npm ci
+  # Use npm script instead of npx to ensure local hardhat is used
+  compile: npm run compile
+
+# Test configuration
+test:
+  enabled: true
+  command: npm test
+
+# Network configuration
+network:
+  name: base-sepolia
+  rpc-url-env: BASE_SEPOLIA_RPC_URL
+
+# Safe configuration
+safe:
+  address: "0xfbD23fcc0D45a3BD6CdBff38b8C03C2A8E9ec663"
+
+# Verification
+verification:
+  blockscout:
+    enabled: true
